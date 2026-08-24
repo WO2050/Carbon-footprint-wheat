@@ -1,0 +1,425 @@
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wheat Carbon Egypt Research App</title>
+<style>
+:root{--g:#285b36;--g2:#3d7a4c;--bg:#f3f6f2;--ink:#26342a;--muted:#657269;--line:#d9e1da;--card:#fff;--warn:#9a671f;--red:#a0473c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,Arial,sans-serif;line-height:1.6}
+header{background:linear-gradient(135deg,#214f2e,#397348);color:white;padding:26px 18px}
+.wrap{max-width:1250px;margin:auto;padding:0 16px}
+h1{margin:0 0 4px;font-size:30px}h2{color:var(--g);margin-top:0}h3{margin-bottom:8px}
+.nav{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:8px}
+.nav .wrap{display:flex;gap:6px;overflow:auto}
+button{border:0;border-radius:9px;padding:10px 15px;background:var(--g);color:#fff;font-weight:700;cursor:pointer;white-space:nowrap}
+button.alt{background:#6d796f}button.warn{background:var(--warn)}button.red{background:var(--red)}
+main{padding-top:18px}.page{display:none}.page.active{display:block}
+.card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 16px #0000000d;border:1px solid #edf1ed}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:13px}
+label{font-weight:700;display:block;margin-bottom:5px}input,select,textarea{width:100%;padding:10px;border:1px solid #cbd6cd;border-radius:9px;background:white;font:inherit}
+textarea{min-height:80px}.small{font-size:13px;color:var(--muted)}.note{padding:11px;background:#f5f8f5;border-right:4px solid var(--g);border-radius:8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px}.kpi{padding:15px;background:#eef6ef;border-radius:13px;text-align:center}.num{font-size:25px;font-weight:800;color:var(--g)}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}th,td{border:1px solid var(--line);padding:8px;text-align:center}th{background:#edf3ee}
+.barbox{margin:9px 0}.barlabel{display:flex;justify-content:space-between}.bar{height:19px;border-radius:12px;background:#e2e9e3;overflow:hidden}.fill{height:100%;background:var(--g2)}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.success{color:#25633a;font-weight:700}.danger{color:#9c4137;font-weight:700}
+.check{display:flex;align-items:center;gap:7px;font-weight:600}.check input{width:auto}
+.footer{color:#6a746c;font-size:12px;padding:20px 0 40px}
+@media print{.nav,.actions,button{display:none!important}.page{display:block!important}.card{box-shadow:none;border:1px solid #ddd}}
+
+.kpi-subunit{
+  margin-top:6px;
+  font-size:.92rem;
+  font-weight:600;
+  opacity:.85;
+}
+
+
+.source-t{
+  display:block;
+  margin-top:4px;
+  font-size:.82rem;
+  opacity:.8;
+}
+
+
+.sub-result{
+  margin-top:5px;
+  font-size:.88em;
+  font-weight:700;
+  direction:ltr;
+}
+.source-secondary{
+  margin-top:2px;
+  font-size:.88em;
+  opacity:.82;
+  direction:ltr;
+}
+
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>🌾 Wheat Carbon Egypt</h1>
+<div>التطبيق البحثي المتكامل لحساب البصمة الكربونية لمحصول القمح بمحافظة الوادي الجديد</div>
+<div class="small" style="color:#e8f1e9">GHG Protocol • ISO 14067 • IPCC • LCA | إدخال بالفدان • حساب بالهكتار • نتائج لكل طن قمح</div>
+</div></header>
+
+<div class="nav"><div class="wrap">
+<button onclick="show('data',this)">بيانات المزرعة</button>
+<button onclick="show('ops',this)">العمليات الزراعية</button>
+<button onclick="show('factors',this)">المعاملات</button>
+<button onclick="show('results',this)">النتائج</button>
+<button onclick="show('scenario',this)">السيناريوهات</button>
+<button onclick="show('uncertainty',this)">عدم اليقين</button>
+<button onclick="show('report',this)">التقرير</button>
+</div></div>
+
+<main class="wrap">
+
+<section id="data" class="page active">
+<div class="card"><h2>1. تعريف الدراسة</h2><div class="grid">
+<div><label>اسم المزرعة/الكود</label><input id="farm" value="WHEAT-001"></div>
+<div><label>المحافظة</label><select id="gov"></select></div>
+<div><label>الموسم الزراعي</label><input id="season" value="2025/2026"></div>
+<div><label>المناخ</label>
+<select id="climate">
+  <option value="dry">جاف — مصر</option>
+  <option value="wet">رطب</option>
+  <option value="semi">شبه جاف</option>
+</select></div>
+<div><label>نظام الري</label>
+<select id="irrigation">
+  <option value="surface">ري بالرش</option>
+  <option value="sprinkler">ري سطحي</option>
+  <option value="drip">ري بالتنقيط</option>
+</select></div>
+<div><label>مساحة القمح (فدان)</label><input id="area" type="number" value="60" min="0"></div>
+<div><label>إنتاجية القمح (طن/فدان)</label><input id="yield" type="number" value="2.8" min="0" step=".01"></div>
+<div><label>نسبة رطوبة الحبوب عند البيع (%)</label><input id="moist" type="number" value="13" min="0" max="100"></div>
+<div><label>الوحدة الوظيفية</label><select id="fu"><option value="ton">1 طن قمح</option><option value="feddan">1 فدان</option></select></div>
+<div><label>حدود النظام</label><select id="boundary"><option value="farmgate">من المدخلات إلى بوابة المزرعة</option><option value="extended">من المدخلات إلى النقل بعد المزرعة</option></select></div>
+</div></div>
+<div class="card">
+  <h2>📐 وحدة الحساب والمنهجية</h2>
+  <p class="note"><b>وحدة الحساب:</b> إدخال البيانات بالفدان للمستخدم المصري، ثم تحويل جميع بيانات النشاط تلقائياً إلى الهكتار قبل تطبيق معاملات الانبعاث. <b>1 فدان = 0.42 هكتار.</b> جميع النتائج الأساسية على أساس <b>kg CO₂e/ha</b>، ثم تُحسب البصمة النهائية للطن من خلال <b>kg CO₂e/ha ÷ طن/ha</b>.</p>
+  <p class="small">معاملات الانبعاث نفسها لا تُحوّل؛ الذي يُحوّل هو بيانات النشاط إلى الوحدة المطلوبة للمعامل.</p>
+</div>
+<div class="card"><h2>2. طريقة استخدام البيانات</h2>
+<div class="grid">
+<label class="check"><input id="includeScope3" type="checkbox" checked> تضمين الانبعاثات السابقة للمزرعة (Scope 3/LCA upstream)</label>
+<label class="check"><input id="includeResidue" type="checkbox" checked> حساب مخلفات المحصول والحرق إن وجدت</label>
+<label class="check"><input id="includeSoilC" type="checkbox"> إدراج تغير مخزون كربون التربة عند توفر قياسات</label>
+</div>
+<p class="note">التطبيق يفصل بين <b>التصنيف التشغيلي Scope 1/2/3</b> وبين <b>مراحل دورة الحياة</b>؛ لأن ISO 14040 ISO 14067وISO 14064-1 يعرّف البصمة على أساس نظام المنتج ودورة الحياة، بينما GHG Protocol يوفر إرشادات لقياس انبعاثات الزراعة. citeturn0search0turn0search1</p>
+</div>
+</section>
+
+<section id="ops" class="page">
+<div class="card"><h2>3. تجهيز الأرض والآلات</h2><div class="grid">
+<div><label>ديزل حرث وتجهيز (لتر/فدان)</label><input id="dieselTillage" type="number" value="10" min="0"></div>
+<div><label>ديزل تسوية/تخطيط (لتر/فدان)</label><input id="dieselLevel" type="number" value="0" min="0"></div>
+<div><label>ديزل زراعة (لتر/فدان)</label><input id="dieselSow" type="number" value="7" min="0"></div>
+<div><label>ديزل رش/خدمة (لتر/فدان)</label><input id="dieselSpray" type="number" value="7" min="0"></div>
+<div><label>ديزل حصاد (لتر/فدان)</label><input id="dieselHarvest" type="number" value="10" min="0"></div>
+</div></div>
+
+<div class="card"><h2>4. التسميد النيتروجيني والعضوي</h2><div class="grid">
+<div><label>يوريا 46% (كجم/فدان)</label><input id="urea" type="number" value="150" min="0"></div>
+<div><label>نترات الكالسيوم 15.5% (كجم/فدان)</label><input id="an" type="number" value="50" min="0"></div>
+<div><label>(كجم/فدان) %11 MPA</label><input id="nother" type="number" value="1" min="0"></div>
+<div><label>(كجم/فدان) 20% NPK</label><input id="nother" type="number" value="0.6" min="0"></div>
+<div><label>سماد N آخر (كجم N/فدان)</label><input id="nother" type="number" value="0" min="0"></div>
+<div><label>سماد عضوي: كمية المنتج (كجم/فدان)</label><input id="manure" type="number" value="0" min="0"></div>
+<div><label>محتوى N في السماد العضوي (%)</label><input id="manureN" type="number" value="1.5" step=".1" min="0"></div>
+<div><label>معدل تبخر N من الأسمدة/السماد العضوي</label><input id="fracGas" type="number" value=".11" step=".01" min="0" max="1"></div>
+<div><label>معدل N التطاير</label><input id="volatilization" type="number" value=".01" min="0" max="1"></div>
+<div><label>معدل N المفقود بالغسيل/الجريان</label><input id="fracLeach" type="number" value=".24" step=".011" min="0" max="1"></div>
+</div></div>
+
+<div class="card"><h2>5. الأسمدة الكربونية والجير</h2><div class="grid">
+<div><label>حجر جيري CaCO₃ (كجم/فدان)</label><input id="lime" type="number" value="0" min="0"></div>
+<div><label>دولوميت (كجم/فدان)</label><input id="dolomite" type="number" value="0" min="0"></div>
+<div><label>معامل تصنيع/نقل السماد النيتروجيني (kg CO₂e/kg N)</label><input id="fertUp" type="number" value="6.6" step=".1" min="0"></div>
+</div></div>
+
+<div class="card"><h2>6. الري والطاقة</h2><div class="grid">
+<div><label>عدد الريات</label><input id="irrigations" type="number" value="6" min="0"></div>
+<div><label>كهرباء الري (kWh/فدان)</label><input id="electricity" type="number" value="0" min="0"></div>
+<div><label>سولار/ديزل للمضخة (لتر/فدان)</label><input id="dieselPump" type="number" value="12" min="0"></div>
+<div><label>غاز طبيعي (m³/فدان)</label><input id="gas" type="number" value="0" min="0"></div>
+<div><label>مياه الري (m³/فدان)</label><input id="water" type="number" value="2500" min="0"></div>
+</div></div>
+
+<div class="card"><h2>7. التقاوي والمبيدات</h2><div class="grid">
+<div><label>تقاوي (كجم/فدان)</label><input id="seed" type="number" value="80" min="0"></div>
+<div><label>معامل انبعاث التقاوي (kg CO₂e/kg)</label><input id="seedEF" type="number" value=".49" step=".01" min="0"></div>
+<div><label>مبيدات حشرية (كجم/فدان)</label><input id="insect" type="number" value="0.23" min="0"></div>
+<div><label>مبيدات فطرية (كجم/فدان)</label><input id="fung" type="number" value="0" min="0"></div>
+<div><label>مبيدات حشائش (كجم/فدان)</label><input id="herb" type="number" value="0" min="0"></div>
+<div><label>معامل المبيدات (kg CO₂e/kg)</label><input id="pestEF" type="number" value="15" step=".1" min="0"></div>
+</div></div>
+
+<div class="card"><h2>8. النقل والمخلفات</h2><div class="grid">
+<div><label>مسافة نقل المدخلات (km)</label><input id="inDist" type="number" value="50" min="0"></div>
+<div><label>حمولة النقل (طن)</label><input id="truckLoad" type="number" value="10" min=".1"></div>
+<div><label>معامل نقل (kg CO₂e/طن·km)</label><input id="truckEF" type="number" value=".19" step=".01" min="0"></div>
+<div><label>نقل المحصول بعد الحصاد (km)</label><input id="outDist" type="number" value="70" min="0"></div>
+<div><label>مخلفات القمح (كجم/فدان)</label><input id="residue" type="number" value="1400" min="0"></div>
+<div><label>نسبة حرق المخلفات (%)</label><input id="burn" type="number" value="6" min="0" max="100"></div>
+<div><label>نسبة C في المخلفات (%)</label><input id="resC" type="number" value="40" step=".1"></div>
+</div></div>
+</section>
+
+<section id="factors" class="page">
+<div class="card"><h2>9. قاعدة معاملات الانبعاث</h2>
+<p class="small">القيم التالية قابلة للتعديل. في الدراسة المنشورة يجب تسجيل المصدر، السنة، Tier، وعدم استخدام قيمة افتراضية دون توثيق. معاملات N₂O أدناه مبنية على إعدادات IPCC الشائعة، مع إبقائها قابلة للتغيير.</p>
+<div class="grid">
+<div><label>EF1: N₂O-N المباشر من N</label><input id="EF1" type="number" value=".01" step=".001"></div>
+<div><label>EF4: N₂O من ترسيب N المتطاير</label><input id="EF4" type="number" value=".01" step=".001"></div>
+<div><label>EF5: N₂O من N المغسول/الجريان</label><input id="EF5" type="number" value=".0075" step=".0005"></div>
+<div><label>GWP100 لـ N₂O</label><input id="GWP" type="number" value="273"></div>
+<div><label>ديزل (kg CO₂e/L)</label><input id="EFdiesel" type="number" value="2.68" step=".01"></div>
+<div><label>بنزين (kg CO₂e/L)</label><input id="EFpetrol" type="number" value="2.31" step=".01"></div>
+<div><label>كهرباء (kg CO₂e/kWh)</label><input id="EFelectric" type="number" value=".38" step=".01"></div>
+<div><label>غاز طبيعي (kg CO₂e/m³)</label><input id="EFgas" type="number" value="0" step=".01"></div>
+<div><label>CaCO₃ (kg CO₂/kg مادة)</label><input id="EFlime" type="number" value=".44" step=".01"></div>
+<div><label>دولوميت (kg CO₂/kg مادة)</label><input id="EFdol" type="number" value=".4767" step=".001"></div>
+<div><label>CH₄ من حرق المخلفات (kg CH₄/kg dry matter)</label><input id="EFburnCH4" type="number" value=".0027" step=".0001"></div>
+<div><label>N₂O من حرق المخلفات (kg N₂O/kg dry matter)</label><input id="EFburnN2O" type="number" value=".00007" step=".00001"></div>
+<div><label>GWP100 لـ CH₄</label><input id="GWPch4" type="number" value="27" step=".1"></div>
+</div>
+<div class="note">مصادر المنهجية الأساسية: إرشادات GHG Protocol للزراعة، وISO 14067:2018 للبصمة الكربونية للمنتج، مع استخدام عوامل IPCC القابلة للتخصيص. ISO 14067 ما زالت النسخة الحالية المؤكدة في 2024 وفق صفحة ISO. citeturn0search0turn0search1</div>
+</div>
+</section>
+
+<section id="results" class="page">
+<div class="card"><h2>10. لوحة النتائج</h2><div class="actions"><button onclick="calculate()">تحديث النتائج</button><button class="alt" onclick="window.print()">طباعة</button><button onclick="exportCSV()">تصدير CSV</button><button onclick="saveData()">حفظ الدراسة</button><button class="warn" onclick="loadData()">استرجاع الدراسة</button></div><div class="note"><b>منهجية الوحدات:</b> الفدان وحدة إدخال للمستخدم المصري، والهكتار هو وحدة الحساب الداخلية. يتم تحويل بيانات النشاط إلى /ha قبل تطبيق معامل الانبعاث، ثم تحسب البصمة النهائية للطن من kg CO₂e/ha ÷ طن/ha.</div><div id="resultsBox"></div></div>
+<div class="card"><h2>11. توزيع مصادر الانبعاث</h2><p class="note"><b>الوحدات:</b> يعرض كل مصدر الانبعاثات أولاً بوحدة kg CO₂e/ha ثم القيمة المكافئة بوحدة t CO₂e/ha.</p><p class="note"><b>وحدات العرض:</b> كل مصدر يظهر أولاً بوحدة kg CO₂e/ha، وبجوارها القيمة المكافئة بوحدة t CO₂e/ha.</p><div id="bars"></div></div>
+</section>
+
+<section id="scenario" class="page">
+<div class="card"><h2>12. تحليل سيناريوهات خفض الانبعاثات</h2>
+<div class="grid">
+<div><label>خفض N الكيميائي (%)</label><input id="scN" type="number" value="20" min="0" max="100"></div>
+<div><label>خفض الديزل (%)</label><input id="scD" type="number" value="15" min="0" max="100"></div>
+<div><label>خفض كهرباء الري (%)</label><input id="scE" type="number" value="0" min="0" max="100"></div>
+<div><label>تحسين الإنتاجية (%)</label><input id="scY" type="number" value="10" min="0"></div>
+<div><label>رفع كفاءة الري: خفض الطاقة (%)</label><input id="scP" type="number" value="10" min="0" max="100"></div>
+</div><button onclick="runScenario()">تحليل السيناريو</button><div id="scenarioBox"></div></div>
+</section>
+
+<section id="uncertainty" class="page">
+<div class="card"><h2>13. تحليل عدم اليقين</h2>
+<p>أدخل نسبة عدم اليقين التقريبية للبيانات/المعاملات. يستخدم التطبيق تجميعاً مبسطاً للجذر التربيعي لمجموع مربعات عدم اليقين النسبي كمؤشر أولي، وليس بديلاً عن Monte Carlo.</p>
+<div class="grid">
+<div><label>عدم يقين بيانات الأسمدة (%)</label><input id="uFert" type="number" value="10"></div>
+<div><label>عدم يقين الوقود (%)</label><input id="uFuel" type="number" value="5"></div>
+<div><label>عدم يقين الكهرباء (%)</label><input id="uElec" type="number" value="10"></div>
+<div><label>عدم يقين Scope 3 (%)</label><input id="uS3" type="number" value="20"></div>
+<div><label>عدم يقين الإنتاجية (%)</label><input id="uYield" type="number" value="5"></div>
+</div><button onclick="uncertainty()">احسب نطاق عدم اليقين</button><div id="uncBox"></div></div>
+</section>
+
+<section id="report" class="page">
+<div class="card"><h2>14. تقرير الدراسة</h2>
+<textarea id="reportNotes" placeholder="اكتب ملاحظات الباحث، مصدر بيانات المزرعة، طريقة جمع البيانات، اسم الباحث..."></textarea>
+<div class="actions"><button onclick="buildReport()">إنشاء التقرير</button><button class="alt" onclick="window.print()">طباعة/حفظ PDF</button><button onclick="exportJSON()">تصدير بيانات الدراسة JSON</button></div>
+<div id="reportBox"></div></div>
+</section>
+
+<div class="footer">
+<p><b>ملاحظة علمية:</b> التطبيق أداة حسابية بحثية، وليس شهادة تحقق أو تحققاً مستقلاً من البصمة. يجب توثيق كل بيانات النشاط ومعاملات الانبعاث ومصدرها، والتحقق من حدود النظام والوحدة الوظيفية والتخصيصات قبل استخدام النتائج في النشر أو إصدار ادعاء بيئي.</p>
+<p>GHG Protocol يوضح أن إرشاد الزراعة يغطي إنتاج المحاصيل والزراعة وتغير استخدام الأراضي، مع إعلان أن Land Sector and Removals Standard سيحل محله في 1 يناير 2027. citeturn0search0</p>
+</div>
+</main>
+
+<script>
+const govs=["الوادي الجديد","الدقهلية","البحيرة","الشرقية","الغربية","كفر الشيخ","القليوبية","المنوفية","الفيوم","بني سويف","المنيا","أسيوط","سوهاج","قنا","الأقصر","أسوان","الجيزة","القاهرة","الإسماعيلية","بورسعيد","دمياط","شمال سيناء","جنوب سيناء","السويس","البحر الأحمر","مطروح","الإسكندرية"];
+document.getElementById('gov').innerHTML=govs.map(x=>`<option>${x}</option>`).join("");
+function show(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.style.background='');if(b)b.style.background='#3d7a4c';if(id==='results')calculate();}
+function n(id){return parseFloat(document.getElementById(id).value)||0}
+function allInputs(){return [...document.querySelectorAll('input,select,textarea')].reduce((o,e)=>{if(e.id)o[e.id]=e.type==='checkbox'?e.checked:e.value;return o},{});}
+const FEDDAN_TO_HA=0.42;
+function feddanToHa(x){return Number(x||0)*FEDDAN_TO_HA;}
+function perFeddanToHa(x){return Number(x||0)/FEDDAN_TO_HA;}
+function row(a,x,t){return `<tr><td>${a}</td><td>${x.toFixed(2)} kg CO₂e/ha</td><td>${(x/1000).toFixed(4)} t CO₂e/ha</td><td>${t?(100*x/t).toFixed(1):0}%</td></tr>`}
+function drawBars(obj,t){
+  document.getElementById('bars').innerHTML=Object.entries(obj)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([k,v])=>`
+      <div class="barbox">
+        <div class="barlabel">
+          <span>${k}</span>
+          <b>${v.toFixed(1)} kg CO₂e/ha</b>
+        </div>
+        <div class="barlabel source-secondary">
+          <span></span>
+          <b>${(v/1000).toFixed(4)} t CO₂e/ha</b>
+        </div>
+        <div class="bar">
+          <div class="fill" style="width:${t?Math.min(100,v/t*100):0}%"></div>
+        </div>
+      </div>`).join('');
+}
+function calculate(){
+  const A_f=n('area'), Y_f=n('yield');
+  if(A_f<=0||Y_f<=0){document.getElementById('resultsBox').innerHTML='<p class="note">أدخل مساحة وإنتاجية أكبر من صفر ثم اضغط احسب.</p>';return;}
+
+  // =====================================================
+  // البحث يحسب داخلياً على أساس الهكتار.
+  // الفدان وحدة إدخال فقط: 1 فدان = 0.42 هكتار.
+  // معاملات الانبعاث لا تُحوّل؛ بيانات النشاط هي التي تُحوّل.
+  // =====================================================
+  const A= feddanToHa(A_f);
+  const Y= perFeddanToHa(Y_f);
+
+  // تحويل كل بيانات النشاط من /فدان إلى /هكتار
+  const urea=perFeddanToHa(n('urea'));
+  const an=perFeddanToHa(n('an'));
+  const nother=perFeddanToHa(n('nother'));
+  const manure=perFeddanToHa(n('manure'));
+  const orgN=manure*n('manureN')/100;
+  const synN=urea*.46+an*.335+nother;
+  const totalN=synN+orgN;
+
+  // N2O - IPCC-style structure
+  const directN2ON=totalN*n('EF1');
+  const directN2O=directN2ON*44/28;
+  const volatilN=totalN*n('fracGas');
+  const leachN=totalN*n('fracLeach');
+  const indirectN2ON=volatilN*n('EF4')+leachN*n('EF5');
+  const indirectN2O=indirectN2ON*44/28;
+  const soilN2O=(directN2O+indirectN2O)*n('GWP');
+
+  const ureaCO2=urea*.733;
+  const limeCO2=perFeddanToHa(n('lime'))*n('EFlime');
+  const dolCO2=perFeddanToHa(n('dolomite'))*n('EFdol');
+
+  const dieselHa=perFeddanToHa(n('dieselTillage')+n('dieselLevel')+n('dieselSow')+n('dieselSpray')+n('dieselHarvest')+n('dieselPump'));
+  const diesel=dieselHa*n('EFdiesel');
+  const elec=perFeddanToHa(n('electricity'))*n('EFelectric');
+  const gas=perFeddanToHa(n('gas'))*n('EFgas');
+  const seed=perFeddanToHa(n('seed'))*n('seedEF');
+  const pest=perFeddanToHa(n('insect')+n('fung')+n('herb'))*n('pestEF');
+  const fertUp=synN*n('fertUp');
+
+  // النقل: ton-km/ha، والإنتاجية أصبحت ton/ha
+  const inTrans=(n('inDist')/Math.max(n('truckLoad'),.1))*n('truckEF')*Y;
+  const outTrans=(n('outDist')/Math.max(n('truckLoad'),.1))*n('truckEF')*Y;
+
+  let residueBurn=0;
+  if(document.getElementById('includeResidue').checked){
+    const dry=perFeddanToHa(n('residue'))*(1-n('moist')/100);
+    const burned=dry*n('burn')/100;
+    residueBurn=burned*(n('EFburnCH4')*n('GWPch4')+n('EFburnN2O')*n('GWP'));
+  }
+
+  const S1=soilN2O+ureaCO2+limeCO2+dolCO2+diesel+gas+residueBurn;
+  const S2=elec;
+  const S3=document.getElementById('includeScope3').checked?(seed+pest+fertUp+inTrans+outTrans):0;
+  const total=S1+S2+S3;
+  const productionFarm=A*Y;
+  const totalFarmKg=total*A;
+  const totalFarmT=totalFarmKg/1000;
+
+  // الخطوة النهائية: kg CO2e/ha ÷ ton/ha = kg CO2e/ton
+  const perTon=Y>0?total/Y:0;
+
+  window.R={A_f,Y_f,A,Y,climate:document.getElementById("climate").value,irrigation:document.getElementById("irrigation").value,synN,orgN,totalN,directN2O,indirectN2O,soilN2O,ureaCO2,limeCO2,dolCO2,diesel,elec,gas,seed,pest,fertUp,inTrans,outTrans,residueBurn,S1,S2,S3,total,productionFarm,totalFarmKg,totalFarmT,perTon};
+
+  document.getElementById('resultsBox').innerHTML=`
+  <div class="kpis">
+    <div class="kpi">المساحة<div class="num">${A.toFixed(2)}</div>هكتار</div>
+    <div class="kpi">الإنتاجية<div class="num">${Y.toFixed(2)}</div>طن/هكتار</div>
+
+    <div class="kpi">Scope 1
+      <div class="num">${S1.toFixed(1)}</div>
+      <div>kg CO₂e/ha</div>
+      <div class="sub-result">${(S1/1000).toFixed(4)} t CO₂e/ha</div>
+    </div>
+
+    <div class="kpi">Scope 2
+      <div class="num">${S2.toFixed(1)}</div>
+      <div>kg CO₂e/ha</div>
+      <div class="sub-result">${(S2/1000).toFixed(4)} t CO₂e/ha</div>
+    </div>
+
+    <div class="kpi">Scope 3
+      <div class="num">${S3.toFixed(1)}</div>
+      <div>kg CO₂e/ha</div>
+      <div class="sub-result">${(S3/1000).toFixed(4)} t CO₂e/ha</div>
+    </div>
+
+    <div class="kpi">الإجمالي
+      <div class="num">${total.toFixed(1)}</div>
+      <div>kg CO₂e/ha</div>
+      <div class="sub-result">${(total/1000).toFixed(4)} t CO₂e/ha</div>
+    </div>
+  </div>
+  <p class="note"><b>وحدات عرض الانبعاثات:</b> يتم عرض كل مصدر بالـ kg CO₂e/ha ثم t CO₂e/ha. أما البصمة النهائية للطن فتحسب من kg CO₂e/ha ÷ طن/ha.</p>
+<div class="card" style="border:2px solid #3d7a4c;margin-top:15px">
+    <h2>🎯 البصمة الكربونية النهائية للطن</h2>
+    <p style="font-size:1.1em"><b>${total.toFixed(2)} kg CO₂e/ha ÷ ${Y.toFixed(2)} طن/ha = ${perTon.toFixed(2)} kg CO₂e/طن قمح</b></p>
+    <div class="kpis">
+      <div class="kpi">البصمة النهائية<div class="num">${perTon.toFixed(2)}</div>kg CO₂e/طن قمح</div>
+      <div class="kpi">بـ t CO₂e/طن<div class="num">${(perTon/1000).toFixed(4)}</div>t CO₂e/طن</div>
+      <div class="kpi">إجمالي المزرعة<div class="num">${totalFarmT.toFixed(3)}</div>t CO₂e</div>
+    </div>
+    <p class="small">المعادلة: kg CO₂e/ha ÷ طن قمح/ha = kg CO₂e/طن قمح.</p>
+  </div>
+  
+<p class="note">
+<b>تحويل وحدة النتيجة:</b>
+kg CO₂e/ha ÷ 1000 = t CO₂e/ha.
+وتظل البصمة النهائية للطن محسوبة من:
+kg CO₂e/ha ÷ طن/ha = kg CO₂e/طن قمح.
+</p>
+
+<table><tr><th>المصدر</th><th>الانبعاثات kg CO₂e/ha</th><th>الانبعاثات t CO₂e/ha</th><th>النسبة %</th></tr>
+  ${row('N₂O من التربة',soilN2O,total)}${row('CO₂ من اليوريا',ureaCO2,total)}${row('الجير والدولوميت',limeCO2+dolCO2,total)}${row('الوقود',diesel+gas,total)}${row('الكهرباء',elec,total)}${row('حرق المخلفات',residueBurn,total)}${row('التقاوي',seed,total)}${row('المبيدات',pest,total)}${row('تصنيع الأسمدة',fertUp,total)}${row('النقل',inTrans+outTrans,total)}</table>
+  <p class="success">المناخ: <b>${document.getElementById("climate").selectedOptions[0].text}</b> | نظام الري: <b>${document.getElementById("irrigation").selectedOptions[0].text}</b> | الإنتاج الكلي للمساحة المدخلة: ${productionFarm.toFixed(2)} طن قمح. وحدة الحساب الداخلية: الهكتار.</p>`;
+
+  drawBars({N2O:soilN2O,وقود:diesel+gas,كهرباء:elec,مدخلات:seed+pest+fertUp,نقل:inTrans+outTrans,مخلفات:residueBurn,يوريا_وجير:ureaCO2+limeCO2+dolCO2},total);
+}
+function runScenario(){if(!window.R)calculate();let r=window.R;
+  let nRed=n('scN')/100,dRed=n('scD')/100,eRed=n('scE')/100,pRed=n('scP')/100,yInc=n('scY')/100;
+  let base=r.soilN2O+r.ureaCO2+r.fertUp;
+  let newN=r.soilN2O*(1-nRed)+r.ureaCO2*(1-nRed)+r.fertUp*(1-nRed);
+  let newFuel=r.diesel*(1-dRed),newElec=r.elec*(1-eRed)*(1-pRed);
+  let newTotal=r.total-base-r.diesel-r.elec+newN+newFuel+newElec;
+  let newIntensity=newTotal/(r.Y*(1+yInc)),saving=r.total-newTotal;
+  document.getElementById('scenarioBox').innerHTML=`<div class="kpis"><div class="kpi">البصمة الحالية<div class="num">${r.perTon.toFixed(1)}</div>kg CO₂e/طن</div><div class="kpi">بعد السيناريو<div class="num">${newIntensity.toFixed(1)}</div>kg CO₂e/طن</div><div class="kpi">خفض الانبعاثات<div class="num">${saving.toFixed(1)}</div>kg CO₂e/ha</div><div class="kpi">خفض كثافة البصمة<div class="num">${(100*(r.perTon-newIntensity)/r.perTon).toFixed(1)}%</div></div></div>`;
+}
+function uncertainty(){if(!window.R)calculate();let r=window.R,weights=[r.soilN2O+r.ureaCO2+r.fertUp,r.diesel,r.elec,r.S3],us=[n('uFert')/100,n('uFuel')/100,n('uElec')/100,n('uS3')/100];let abs=Math.sqrt(weights.reduce((s,x,i)=>s+(x*us[i])**2,0));let lo=(r.total-abs),hi=(r.total+abs);let y=n('uYield')/100;let loTon=(lo/(r.Y*(1+y))),hiTon=(hi/(r.Y*(1-y)));document.getElementById('uncBox').innerHTML=`<div class="kpis"><div class="kpi">التقدير المركزي<div class="num">${r.perTon.toFixed(1)}</div>kg CO₂e/طن</div><div class="kpi">النطاق التقريبي<div class="num">${loTon.toFixed(1)} – ${hiTon.toFixed(1)}</div>kg CO₂e/طن</div><div class="kpi">عدم يقين الإنتاجية<div class="num">±${(100*y).toFixed(0)}%</div></div></div><p class="small">مؤشر أولي لعدم اليقين؛ لا يغني عن Monte Carlo أو تحليل عدم يقين كامل عند النشر.</p>`}
+function saveData(){localStorage.setItem('wheatCarbonEgypt',JSON.stringify(allInputs()));alert('تم حفظ الدراسة على هذا الجهاز.');}
+function loadData(){let x=JSON.parse(localStorage.getItem('wheatCarbonEgypt')||'null');if(!x)return alert('لا توجد دراسة محفوظة.');Object.entries(x).forEach(([id,v])=>{let e=document.getElementById(id);if(e){if(e.type==='checkbox')e.checked=v==='true'||v===true;else e.value=v}});calculate();alert('تم استرجاع الدراسة.');}
+function exportJSON(){let blob=new Blob([JSON.stringify({inputs:allInputs(),results:window.R||null},null,2)],{type:'application/json'});download(blob,'wheat_carbon_study.json');}
+function exportCSV(){if(!window.R)calculate();let r=window.R,rows=[['البند','القيمة','الوحدة'],['المحافظة',document.getElementById('gov').value,''],['المناخ',document.getElementById('climate').selectedOptions[0].text,''],['نظام الري',document.getElementById('irrigation').selectedOptions[0].text,''],['المساحة',r.A,'ha'],['المساحة الأصلية',r.A_f,'فدان'],['الإنتاجية',r.Y,'طن/ha'],['الإنتاجية الأصلية',r.Y_f,'طن/فدان'],['Scope 1',r.S1,'kg CO2e/ha'],['Scope 2',r.S2,'kg CO2e/ha'],['Scope 3',r.S3,'kg CO2e/ha'],['الإجمالي',r.total,'kg CO2e/ha'],['الإجمالي بالطن/هكتار',r.total/1000,'t CO2e/ha'],['كثافة البصمة النهائية',r.perTon,'kg CO2e/طن'],['كثافة البصمة',r.perTon/1000,'t CO2e/طن'],['إجمالي المزرعة',r.totalFarmT,'t CO2e'],['إنتاج المزرعة',r.productionFarm,'طن']];let csv='\uFEFF'+rows.map(x=>x.join(',')).join('\n');download(new Blob([csv],{type:'text/csv;charset=utf-8'}),'wheat_carbon_results_ha.csv');}
+function download(blob,name){let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);}
+function buildReport(){if(!window.R)calculate();let r=window.R;document.getElementById('reportBox').innerHTML=`<h3>تقرير البصمة الكربونية لمحصول القمح في مصر</h3><p><b>المزرعة:</b> ${document.getElementById('farm').value} | <b>المحافظة:</b> ${document.getElementById('gov').value} | <b>الموسم:</b> ${document.getElementById('season').value} | <b>المناخ:</b> ${document.getElementById('climate').selectedOptions[0].text} | <b>نظام الري:</b> ${document.getElementById('irrigation').selectedOptions[0].text}</p><p><b>المساحة:</b> ${r.A_f} فدان = ${r.A.toFixed(2)} هكتار | <b>الإنتاجية:</b> ${r.Y_f} طن/فدان = ${r.Y.toFixed(2)} طن/هكتار</p><p class="note"><b>عرض النتائج:</b> العمود الأول للانبعاثات بوحدة kg CO₂e/ha، والعمود الثاني لنفس الانبعاثات بعد تحويلها إلى t CO₂e/ha (القسمة على 1000).</p><table>
+<tr><th>المؤشر</th><th>النتيجة kg CO₂e/ha</th><th>النتيجة t CO₂e/ha</th></tr>
+<tr><td>Scope 1</td><td>${r.S1.toFixed(2)}</td><td>${(r.S1/1000).toFixed(4)}</td></tr>
+<tr><td>Scope 2</td><td>${r.S2.toFixed(2)}</td><td>${(r.S2/1000).toFixed(4)}</td></tr>
+<tr><td>Scope 3</td><td>${r.S3.toFixed(2)}</td><td>${(r.S3/1000).toFixed(4)}</td></tr>
+<tr><td><b>الإجمالي</b></td><td><b>${r.total.toFixed(2)}</b></td><td><b>${(r.total/1000).toFixed(4)}</b></td></tr>
+</table>
+<table style="margin-top:14px">
+<tr><th>مؤشرات البصمة النهائية</th><th>النتيجة</th></tr>
+<tr><td><b>البصمة الكربونية النهائية</b></td><td><b>${r.perTon.toFixed(2)} kg CO₂e/طن قمح</b></td></tr>
+<tr><td>البصمة بالطن من CO₂e/طن قمح</td><td>${(r.perTon/1000).toFixed(4)} t CO₂e/طن قمح</td></tr>
+<tr><td>إجمالي المزرعة</td><td>${r.totalFarmT.toFixed(3)} t CO₂e</td></tr>
+</table><h3>ملاحظات الباحث</h3><p>${(document.getElementById('reportNotes').value||'—').replace(/\n/g,'<br>')}</p><p class="small">وحدة الحساب الداخلية: الهكتار. بيانات النشاط المحلية حُولت من الفدان إلى الهكتار قبل تطبيق معاملات الانبعاث. يجب توثيق مصادر المعاملات وحدود النظام قبل النشر.</p>`}
+calculate();
+calculate();
+</script>
+
+<div class="note">
+<b>توحيد الوحدات:</b> جميع نتائج مصادر الانبعاث الأساسية تُعرض بوحدة
+<strong>kg CO₂e/ha</strong>، ويُعرض بجوارها التحويل إلى
+<strong>t CO₂e/ha</strong> وفق العلاقة:
+<strong>t CO₂e/ha = kg CO₂e/ha ÷ 1000</strong>.
+</div>
+
+</body></html>
